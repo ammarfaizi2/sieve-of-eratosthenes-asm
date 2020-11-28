@@ -7,23 +7,22 @@
         .global nlog
 
 nlog:
-        push    %rbp
-        mov     %rsp, %rbp
+        pushq   %rbp
+        movq    %rsp, %rbp
 
-        push    %rdi
+        pushq   %rdi
 
         fld     rec_log2e(%rip)
         fild    -8(%rbp)
         fyl2x
         fistp   -8(%rbp)
 
-        pop     %rax
+        popq    %rax
 
-        mov     %rbp, %rsp
-        pop     %rbp
+        movq    %rbp, %rsp
+        popq    %rbp
         ret
 
 .data
 rec_log2e:
         .float  6.93147180e-1
-
