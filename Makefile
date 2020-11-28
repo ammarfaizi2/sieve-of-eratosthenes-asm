@@ -16,8 +16,17 @@ clean:
 tests/test_eratosthenes.o: tests/test_eratosthenes.c
 	$(CC) $(CLFAGS) -c tests/test_eratosthenes.c -o $(@)
 
+
+####### nlog #######
+nlog.o: nlog.S
+	$(CC) $(CLFAGS) -c nlog.S -o $(@)
+####################
+
+
+####### eratosthenes #######
 eratosthenes.o: eratosthenes.S
 	$(CC) $(CLFAGS) -c eratosthenes.S -o $(@)
+############################
 
 
 ####### my_allocator #######
@@ -44,8 +53,8 @@ test_my_allocator: tests/bin/test_my_allocator
 
 ######## Test eratosthenes ########
 BIN_FILES += tests/bin/test_eratosthenes
-tests/bin/test_eratosthenes: tests/test_eratosthenes.o eratosthenes.o my_allocator.o
-	$(CC) $(CLFAGS) tests/test_eratosthenes.o eratosthenes.o my_allocator.o -o $(@)
+tests/bin/test_eratosthenes: tests/test_eratosthenes.o eratosthenes.o my_allocator.o nlog.o
+	$(CC) $(CLFAGS) tests/test_eratosthenes.o eratosthenes.o my_allocator.o nlog.o -o $(@)
 
 test_eratosthenes: tests/bin/test_eratosthenes
 	@echo "---------------------------------"
