@@ -15,7 +15,9 @@ main()
   uint64_t *arr = eratosthenes(n, &num);
 
   printf("Number of prime numbers between 1 and %ld = %d\n", n, num);
-  for (uint16_t i = 0; i < num; i++) {
+
+  for (uint64_t i = 0; i < num; i++) {
+
     printf("%*ld ", 5, arr[i]);
     if ((i % 4) == 0) {
       printf("\n");
