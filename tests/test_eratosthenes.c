@@ -8,5 +8,5 @@ eratosthenes(uint64_t n, uint64_t *m);
 int
 main()
 {
-  
+  eratosthenes(100, NULL);
 }
