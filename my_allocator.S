@@ -3,13 +3,23 @@
  * @author Ammar Faizi <ammarfaizi2@gmail.com>
  */
 
+#define USE_MALLOC
+
 .text
         .global myMalloc
         .global myCalloc
         .global myFree
+#ifdef USE_MALLOC
+        .extern free
+        .extern malloc
+        .extern calloc
+#endif
 
 # void *myMalloc(size_t size);
 myMalloc:
+#ifdef USE_MALLOC
+        jmp     malloc
+#else
         addq    $16+15, %rdi    # // Add 16 to store mapped memory and length.
                                 # // Add 15 to handle 16-byte aligned.
         pushq   %rdi            # // Save the length.
@@ -37,9 +47,13 @@ myMalloc:
         # // Now, rax is guaranteed to be 16-byte aligned
         # // and is usable memory.
         ret
+#endif /* #ifdef USE_MALLOC */
 
 # void myFree(void *ptr);
 myFree:
+#ifdef USE_MALLOC
+        jmp     free
+#else
         movq    %rdi, %rdx
         movq    -8(%rdx), %rsi  # // The length of mapped memory.
         movq    -16(%rdx), %rdi # // The mapped memory start address.
@@ -48,10 +62,14 @@ myFree:
         # int munmap(void *addr, size_t length);
         syscall
         ret
+#endif
 
 
 # void *myCalloc(size_t nmemb, size_t size);
 myCalloc:
+#ifdef USE_MALLOC
+        jmp     calloc
+#else
         pushq   %rbx
         movq    %rdi, %rax
         mulq    %rsi
@@ -69,3 +87,4 @@ myCalloc:
         movq    %rbx, %rax
         pop     %rbx
         ret
+#endif /* #ifdef USE_MALLOC */
