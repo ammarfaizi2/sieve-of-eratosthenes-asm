@@ -1,13 +1,15 @@
 
 CC        = gcc
-CLFAGS    = -no-pie -Wall -Wextra -ggdb3 -Og
+CLFAGS    = -fPIC -fpic -no-pie -Wall -Wextra -ggdb3 -Og
 VALGRIND  = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes
-BIN_FILES = 
+BIN_FILES = tests/bin/test_my_allocator tests/bin/test_eratosthenes
 
 
-all: test
 
-test: test_my_allocator test_eratosthenes
+all: $(BIN_FILES)
+
+test: do_test_my_allocator do_test_eratosthenes
+
 
 clean:
 	find -name '*.o' | xargs rm -vf
@@ -36,14 +38,13 @@ my_allocator.o: my_allocator.S
 
 
 ######## Test allocator ########
-BIN_FILES += tests/bin/test_my_allocator
 tests/bin/test_my_allocator: tests/test_my_allocator.o my_allocator.o
 	$(CC) $(CLFAGS) tests/test_my_allocator.o my_allocator.o -o $(@)
 
 tests/test_my_allocator.o: tests/test_my_allocator.c
 	$(CC) $(CLFAGS) -c tests/test_my_allocator.c -o $(@)
 
-test_my_allocator: tests/bin/test_my_allocator
+do_test_my_allocator: tests/bin/test_my_allocator
 	@echo "------------------------------"
 	@echo "------- Test allocator -------"
 	@echo "------------------------------"
@@ -52,11 +53,10 @@ test_my_allocator: tests/bin/test_my_allocator
 
 
 ######## Test eratosthenes ########
-BIN_FILES += tests/bin/test_eratosthenes
 tests/bin/test_eratosthenes: tests/test_eratosthenes.o eratosthenes.o my_allocator.o nlog.o
 	$(CC) $(CLFAGS) tests/test_eratosthenes.o eratosthenes.o my_allocator.o nlog.o -o $(@)
 
-test_eratosthenes: tests/bin/test_eratosthenes
+do_test_eratosthenes: tests/bin/test_eratosthenes
 	@echo "---------------------------------"
 	@echo "------- Test eratosthenes -------"
 	@echo "---------------------------------"

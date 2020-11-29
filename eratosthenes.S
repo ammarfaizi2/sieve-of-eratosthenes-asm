@@ -44,7 +44,7 @@ eratosthenes:
 
         movl    $2, %edi                # uint64_t p = 2;
         movl    $1, %ecx                # uint64_t i = 1;
-
+        xorl    %esi, %esi              # uint64_t c = 0;
 .traverse_p:
         incq    %rcx
         movq    %rcx, %rax
@@ -56,6 +56,8 @@ eratosthenes:
         jmp     .traverse_p             # goto .traverse_p;
 
 .next_check:
+        movq    %rdi, (%r13, %rsi, 8)   # arr[c] = i;
+        incq    %rsi                    # c++;
         movq    %rdi, %rcx              # uint64_t smallest_idx = p;
 
         # // Find the next smallest index of table which is false.
@@ -63,7 +65,7 @@ eratosthenes:
         incq    %rcx                    # smallest_idx++;
 
         cmpq    %rbx, %rcx              # if (smallest_idx >= n)
-        jae     .mark_finished          #   goto .mark_finished;
+        jae     .epilogue               #   goto .epilogue
 
         testb   $1, (%r14, %rcx, 1)     # if (!table[smallest_idx])
         jz      .got_next_smallest_idx  #   goto .got_next_smallest_idx
@@ -74,25 +76,6 @@ eratosthenes:
         movq    %rcx, %rdi              # p = i;
         movl    $2, %ecx                # i = 2;
         jmp     .traverse_p             # goto .traverse_p
-
-.mark_finished:
-        xorl    %esi, %esi              # uint64_t c = 0;
-        movl    $1, %ecx                # i = 1;
-.fill_array:
-        incq    %rcx                    # i++;
-
-        cmpq    %rbx, %rcx              # if (rcx >= n)
-        jae     .epilogue               #   goto .epilogue;
-
-        testb   $1, (%r14, %rcx, 1)     # if (!table[i])
-        jz      .do_fill                #   goto .do_fill;
-
-        jmp     .fill_array             # goto .fill_array;
-.do_fill:
-        movq    %rcx, (%r13, %rsi, 8)   # arr[c] = i;
-        incq    %rsi                    # c++;
-        jmp     .fill_array             # goto .fill_array;
-
 .epilogue:
         movq    %rsi, (%r12)            # *m = c;
         movq    %r14, %rdi
