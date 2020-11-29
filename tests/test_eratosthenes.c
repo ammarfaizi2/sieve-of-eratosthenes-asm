@@ -29,8 +29,12 @@ do {                                                                    \
 int
 main()
 {
-  // MY_TEST(5);
-  // MY_TEST(10);
-  // MY_TEST(100);
-  MY_TEST(100000000);
+  MY_TEST(5);
+  MY_TEST(10);
+  MY_TEST(100);
+  MY_TEST(1000);
+  MY_TEST(10000);
+  MY_TEST(100000);
+  MY_TEST(1000000);
+  MY_TEST(10000000);
 }
