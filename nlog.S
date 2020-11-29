@@ -6,6 +6,7 @@
 .text
         .global nlog
 
+# int nlog(int n);
 nlog:
         pushq   %rbp
         movq    %rsp, %rbp

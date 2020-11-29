@@ -8,7 +8,7 @@
         .global myCalloc
         .global myFree
 
-# void *myMalloc(size_t);
+# void *myMalloc(size_t size);
 myMalloc:
         addq    $16+15, %rdi    # // Add 16 to store mapped memory and length.
                                 # // Add 15 to handle 16-byte aligned.
@@ -38,7 +38,7 @@ myMalloc:
         # // and is usable memory.
         ret
 
-# void myFree(void *);
+# void myFree(void *ptr);
 myFree:
         movq    %rdi, %rdx
         movq    -8(%rdx), %rsi  # // The length of mapped memory.
@@ -50,7 +50,7 @@ myFree:
         ret
 
 
-# void *myCalloc(size_t, size_t);
+# void *myCalloc(size_t nmemb, size_t size);
 myCalloc:
         pushq   %rbx
         movq    %rdi, %rax

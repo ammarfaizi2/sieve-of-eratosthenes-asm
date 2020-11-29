@@ -3,9 +3,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-extern void *myMalloc(size_t);
-extern void *myCalloc(size_t, size_t);
-extern void myFree(void *);
+extern void *myMalloc(size_t size);
+extern void *myCalloc(size_t nmemb, size_t size);
+extern void myFree(void *ptr);
 
 #define TEST_MEM(MEM, LENGTH)               \
   __asm__ volatile(                         \
