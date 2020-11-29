@@ -14,14 +14,14 @@ main()
   uint64_t num;
   uint64_t *arr = eratosthenes(n, &num);
 
-  printf("Number of prime numbers between 1 and %ld = %ld\n", n, num);
+  printf("There are %ld prime numbers between 1 and %ld\n", num, n);
 
   for (uint64_t i = 0; i < num; i++) {
-
-    printf("%*ld ", 5, arr[i]);
-    if ((i % 4) == 0) {
+    if ((i % 6) == 0) {
       printf("\n");
     }
+
+    printf("%*ld ", 5, arr[i]);
   }
 
   printf("\n");

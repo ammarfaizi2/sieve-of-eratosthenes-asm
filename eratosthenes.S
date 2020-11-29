@@ -114,15 +114,15 @@ eratosthenes:
         xorl    %edx, %edx
         movl    $1, %ecx
 .fill_the_array:
+        incq    %rcx
         cmpq    %rbx, %rcx
         jae     .epilogue
-        incq    %rcx
         testb   $1, (%r13, %rcx, 1)
         jz      .do_fill
         jmp     .fill_the_array
 .do_fill:
-        incq    %rdx
         movq    %rcx, (%r12, %rdx, 8)
+        incq    %rdx
         jmp     .fill_the_array
 .epilogue:
         movq    %rdx, (%r15)
