@@ -44,14 +44,15 @@ eratosthenes:
 
         movq    %rsi, %r15
         movq    %rdi, %rbx      # // rbx = n
-        callq   nlog            # // rax = ln(n)
-        movq    %rax, %rdi
-        subq    $2, %rdi        # // rdi = ln(n) - 2
-        xorl    %edx, %edx
-        movq    %rbx, %rax      # // rax = n
-        divq    %rdi            # // rax = n / (ln(n) - 2)
 
-        movq    %rax, %rdi
+        // callq   nlog            # // rax = ln(n)
+        // movq    %rax, %rdi
+        // subq    $2, %rdi        # // rdi = ln(n) - 2
+        // xorl    %edx, %edx
+        // movq    %rbx, %rax      # // rax = n
+        // divq    %rdi            # // rax = n / (ln(n) - 2)
+        // movq    %rax, %rdi
+
         movl    $8, %esi
                                 # uint64_t *array;
         callq   myCalloc        # array = (uint64_t *)myCalloc(rax, sizeof(uint64_t));
