@@ -60,5 +60,6 @@ test_eratosthenes: tests/bin/test_eratosthenes
 	@echo "---------------------------------"
 	@echo "------- Test eratosthenes -------"
 	@echo "---------------------------------"
-	$(VALGRIND) tests/bin/test_eratosthenes
+# 	$(VALGRIND) tests/bin/test_eratosthenes
+	tests/bin/test_eratosthenes
 ###################################

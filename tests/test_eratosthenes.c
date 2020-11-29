@@ -10,7 +10,7 @@ extern void myFree(void *ptr);
 int
 main()
 {
-  uint64_t n = 121;
+  uint64_t n = 1000;
   uint64_t num;
   uint64_t *arr = eratosthenes(n, &num);
 

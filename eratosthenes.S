@@ -37,17 +37,12 @@ eratosthenes:
         xorl    %eax, %eax
         cmpq    $2, %rdi
         jb      .ret
-        pushq   %rbp
         pushq   %rbx
         pushq   %r12
         pushq   %r13
-        pushq   %r14
         pushq   %r15
 
         movq    %rsi, %r15
-        movq    %rsp, %rbp
-        subq    $8, %rsp
-
         movq    %rdi, %rbx      # // rbx = n
         callq   nlog            # // rax = ln(n)
         movq    %rax, %rdi
@@ -68,17 +63,17 @@ eratosthenes:
         call    myCalloc        # table = (bool *)myCalloc(n, sizeof(bool));
         movq    %rax, %r13
 
-        movl    $2, %r14d       # uint64_t p = 2; // current smallest prime (p)
+        movl    $2, %r9d        # uint64_t p = 2; // current smallest prime (p)
         movl    $1, %ecx        # uint64_t i = 1; // counter (i)
 
-        # // r14 = p
+        # // r9 = p
         # // rcx = i
         # // Enumerate np, while (ip < i);
         # uint64_t ip;
-.traverse_r14:
+.traverse_r9:
         incq    %rcx
         movq    %rcx, %rax
-        mulq    %r14            # ip = i * p;
+        mulq    %r9             # ip = i * p;
         cmpq    %rbx, %rax
         jae     .next_check     # if (ip >= n) goto .next_check
 
@@ -92,10 +87,10 @@ eratosthenes:
         REST_3_ARGS
 #endif
 
-        jmp     .traverse_r14   # goto .traverse_r14;
+        jmp     .traverse_r9   # goto .traverse_r9;
 .next_check:
         # // Now, find the smallest unmarked.
-        movq    %r14, %rcx      # i = p;
+        movq    %r9, %rcx       # i = p;
 .get_smallest_unmarked:
         incq    %rcx            # i++;
 
@@ -106,13 +101,14 @@ eratosthenes:
         jnz     .get_smallest_unmarked
 
         # // Smallest unmarked has been found.
-        movq    %rcx, %r14      # p = i;
+        movq    %rcx, %r9      # p = i;
         movq    $1, %rcx
-        jmp     .traverse_r14   # goto .traverse_r14;
+        jmp     .traverse_r9   # goto .traverse_r9;
 
 .all_non_prime_numbers_have_been_marked:
         xorl    %edx, %edx
         movl    $1, %ecx
+
 .fill_the_array:
         incq    %rcx
         cmpq    %rbx, %rcx
@@ -120,24 +116,22 @@ eratosthenes:
         testb   $1, (%r13, %rcx, 1)
         jz      .do_fill
         jmp     .fill_the_array
+
 .do_fill:
         movq    %rcx, (%r12, %rdx, 8)
         incq    %rdx
         jmp     .fill_the_array
+
 .epilogue:
         movq    %rdx, (%r15)
         movq    %r13, %rdi
         call    myFree
-
         movq    %r12, %rax
-        movq    %rbp, %rsp
 
         popq    %r15
-        popq    %r14
         popq    %r13
         popq    %r12
         popq    %rbx
-        popq    %rbp
 .ret:
         ret
 
