@@ -19,7 +19,7 @@ do {                                                                    \
     if ((i % 6) == 0) {                                                 \
       printf("\n");                                                     \
     }                                                                   \
-    printf("%*ld ", 5, arr[i]);                                         \
+    printf("%*ld ", 10, arr[i]);                                        \
   }                                                                     \
   printf("\n\n");                                                       \
   myFree(arr);                                                          \
@@ -29,8 +29,8 @@ do {                                                                    \
 int
 main()
 {
-  MY_TEST(5);
-  MY_TEST(10);
-  MY_TEST(100);
-  MY_TEST(1000);
+  // MY_TEST(5);
+  // MY_TEST(10);
+  // MY_TEST(100);
+  MY_TEST(100000000);
 }

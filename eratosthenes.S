@@ -3,27 +3,9 @@
  * @author Ammar Faizi <ammarfaizi2@gmail.com>
  */
 
-// #define DEBUG_PRINT
-
-#define SAVE_3_ARGS     \
-        pushq %rdi;     \
-        pushq %rsi;     \
-        pushq %rdx;
-
-#define REST_3_ARGS     \
-        popq %rdi;      \
-        popq %rsi;      \
-        popq %rdx;
-
 .text
         .global eratosthenes
-
         .extern myCalloc        # void *myCalloc(size_t nmemb, size_t size);
-        .extern nlog            # int nlog(int n);
-#ifdef DEBUG_PRINT
-        .extern printf          # // debugging purpose...
-#endif
- 
 /**
  * @param uint64_t n        Last number to be traversed.
  * @param uint64_t *m       The number of prime number between 1 and n.
@@ -34,142 +16,90 @@
  */
 # uint64_t *eratosthenes(uint64_t n, uint64_t *m);
 eratosthenes:
-        xorl    %eax, %eax
-        cmpq    $2, %rdi
-        jb      .ret
+        cmpl    $2, %edi                # if (n <= 2)
+        jbe     .ret_null               #   goto .ret_null;
+
         pushq   %rbx
         pushq   %r12
         pushq   %r13
-        pushq   %r15
+        pushq   %r14
 
-        movq    %rsi, %r15
-        movq    %rdi, %rbx      # // rbx = n
-
-        // callq   nlog            # // rax = ln(n)
-        // movq    %rax, %rdi
-        // subq    $2, %rdi        # // rdi = ln(n) - 2
-        // xorl    %edx, %edx
-        // movq    %rbx, %rax      # // rax = n
-        // divq    %rdi            # // rax = n / (ln(n) - 2)
-        // movq    %rax, %rdi
+        movq    %rdi, %rbx
+        movq    %rsi, %r12
 
         movl    $8, %esi
-                                # uint64_t *array;
-        callq   myCalloc        # array = (uint64_t *)myCalloc(rax, sizeof(uint64_t));
-        movq    %rax, %r12
+        callq   myCalloc                # uint64_t *arr;
+        movq    %rax, %r13              # arr = (uint64_t *)myCalloc(n, sizeof(uint64_t));
 
         movq    %rbx, %rdi
         movl    $1, %esi
-                                # bool *table;
-        call    myCalloc        # table = (bool *)myCalloc(n, sizeof(bool));
-        movq    %rax, %r13
+        callq   myCalloc                # bool *table;
+        movq    %rax, %r14              # table = (bool *)myMalloc(n, sizeof(bool));
 
-        movl    $2, %r9d        # uint64_t p = 2; // current smallest prime (p)
-        movl    $1, %ecx        # uint64_t i = 1; // counter (i)
+        movl    $2, %edi                # uint64_t p = 2;
+        movl    $1, %ecx                # uint64_t i = 1;
 
-        # // r9 = p
-        # // rcx = i
-        # // Enumerate np, while (ip < i);
-        # uint64_t ip;
-.traverse_r9:
+.traverse_p:
         incq    %rcx
         movq    %rcx, %rax
-        mulq    %r9             # ip = i * p;
-        cmpq    %rbx, %rax
-        jae     .next_check     # if (ip >= n) goto .next_check
+        mulq    %rdi                    # uint64_t ip = i * p;
+        cmpq    %rbx, %rax              # if (ip >= n)
+        jae     .next_check             #   goto .next_check;
 
-        movb    $1, (%r13, %rax, 1) # table[ip] = true;
+        movb    $1, (%r14, %rax, 1)     # table[i] = true;
+        jmp     .traverse_p             # goto .traverse_p;
 
-#ifdef DEBUG_PRINT
-        SAVE_3_ARGS
-        leaq    fmt1(%rip), %rdi
-        movq    %rax, %rsi
-        callq   safe_printf
-        REST_3_ARGS
-#endif
-
-        jmp     .traverse_r9   # goto .traverse_r9;
 .next_check:
-        # // Now, find the smallest unmarked.
-        movq    %r9, %rcx       # i = p;
-.get_smallest_unmarked:
-        incq    %rcx            # i++;
+        movq    %rdi, %rcx              # uint64_t smallest_idx = p;
 
-        cmpq    %rbx, %rcx
-        jae     .all_non_prime_numbers_have_been_marked
+        # // Find the next smallest index of table which is false.
+.table_check_smallest:
+        incq    %rcx                    # smallest_idx++;
 
-        testb   $1, (%r13, %rcx, 1)
-        jnz     .get_smallest_unmarked
+        cmpq    %rbx, %rcx              # if (smallest_idx >= n)
+        jae     .mark_finished          #   goto .mark_finished;
 
-        # // Smallest unmarked has been found.
-        movq    %rcx, %r9      # p = i;
-        movq    $1, %rcx
-        jmp     .traverse_r9   # goto .traverse_r9;
+        testb   $1, (%r14, %rcx, 1)     # if (!table[smallest_idx])
+        jz      .got_next_smallest_idx  #   goto .got_next_smallest_idx
 
-.all_non_prime_numbers_have_been_marked:
-        xorl    %edx, %edx
-        movl    $1, %ecx
+        jmp     .table_check_smallest   # goto .table_check_smallest
 
-.fill_the_array:
-        incq    %rcx
-        cmpq    %rbx, %rcx
-        jae     .epilogue
-        testb   $1, (%r13, %rcx, 1)
-        jz      .do_fill
-        jmp     .fill_the_array
+.got_next_smallest_idx:
+        movq    %rcx, %rdi              # p = i;
+        movl    $2, %ecx                # i = 2;
+        jmp     .traverse_p             # goto .traverse_p
 
+.mark_finished:
+        xorl    %esi, %esi              # uint64_t c = 0;
+        movl    $1, %ecx                # i = 1;
+.fill_array:
+        incq    %rcx                    # i++;
+
+        cmpq    %rbx, %rcx              # if (rcx >= n)
+        jae     .epilogue               #   goto .epilogue;
+
+        testb   $1, (%r14, %rcx, 1)     # if (!table[i])
+        jz      .do_fill                #   goto .do_fill;
+
+        jmp     .fill_array             # goto .fill_array;
 .do_fill:
-        movq    %rcx, (%r12, %rdx, 8)
-        incq    %rdx
-        jmp     .fill_the_array
+        movq    %rcx, (%r13, %rsi, 8)   # arr[c] = i;
+        incq    %rsi                    # c++;
+        jmp     .fill_array             # goto .fill_array;
 
 .epilogue:
-        movq    %rdx, (%r15)
-        movq    %r13, %rdi
-        call    myFree
-        movq    %r12, %rax
+        movq    %rsi, (%r12)            # *m = c;
+        movq    %r14, %rdi
+        callq   myFree                  # myFree(table);
 
-        popq    %r15
+        movq    %r13, %rax              # return arr;
+        popq    %r14
         popq    %r13
         popq    %r12
         popq    %rbx
-.ret:
         ret
 
-#ifdef DEBUG_PRINT
-.text
-/* Only safe for 3 arguments (max). */
-/* rdi, rsi, rdx */
-safe_printf:
-        pushfq
-        pushq   %rax
-        pushq   %rcx
-        pushq   %r8
-        pushq   %r9
-        pushq   %r10
-        pushq   %r11
-        pushq   %rbp
-
-        movq    %rsp, %rbp
-        andq    $-16, %rsp
+.ret_null:
         xorl    %eax, %eax
-        callq   printf
-        movq    %rbp, %rsp
-
-        popq    %rbp
-        popq    %r11
-        popq    %r10
-        popq    %r9
-        popq    %r8
-        popq    %rcx
-        popq    %rax
-        popfq
-        ret
-
-.data
-fmt1:
-        .string "Num: %ld\n"
-
-fmt2:
-        .string "quo: %ld, rem: %ld\n"
-#endif
+        movq    %rax, (%rsi)            # *m = 0;
+        ret                             # return NULL;
