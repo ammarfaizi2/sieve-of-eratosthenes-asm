@@ -10,7 +10,7 @@ extern void myFree(void *ptr);
 #define MY_TEST(N)                                                      \
 do {                                                                    \
   uint64_t n = (N);                                                     \
-  uint64_t num;                                                         \
+  uint64_t num = 0;                                                     \
   uint64_t *arr = eratosthenes(n, &num);                                \
                                                                         \
   printf("There are %ld prime numbers between 1 and %ld\n", num, n);    \

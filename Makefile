@@ -1,6 +1,6 @@
 
 CC        = gcc
-CLFAGS    = -Wall -Wextra -ggdb3 -Og
+CLFAGS    = -no-pie -Wall -Wextra -ggdb3 -Og
 VALGRIND  = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes
 BIN_FILES = 
 

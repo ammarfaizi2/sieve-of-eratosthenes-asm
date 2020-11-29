@@ -6,6 +6,8 @@
 .text
         .global eratosthenes
         .extern myCalloc        # void *myCalloc(size_t nmemb, size_t size);
+        .extern puts
+        .extern stderr
 /**
  * @param uint64_t n        Last number to be traversed.
  * @param uint64_t *m       The number of prime number between 1 and n.
@@ -30,11 +32,15 @@ eratosthenes:
         movl    $8, %esi
         callq   myCalloc                # uint64_t *arr;
         movq    %rax, %r13              # arr = (uint64_t *)myCalloc(n, sizeof(uint64_t));
+        testq   %rax, %rax              # if (arr == NULL)
+        jz      .calloc_error           #   goto .calloc_error
 
         movq    %rbx, %rdi
         movl    $1, %esi
         callq   myCalloc                # bool *table;
         movq    %rax, %r14              # table = (bool *)myMalloc(n, sizeof(bool));
+        testq   %rax, %rax              # if (table == NULL)
+        jz      .calloc_error           #   goto .calloc_error
 
         movl    $2, %edi                # uint64_t p = 2;
         movl    $1, %ecx                # uint64_t i = 1;
@@ -91,8 +97,8 @@ eratosthenes:
         movq    %rsi, (%r12)            # *m = c;
         movq    %r14, %rdi
         callq   myFree                  # myFree(table);
-
         movq    %r13, %rax              # return arr;
+.ret:
         popq    %r14
         popq    %r13
         popq    %r12
@@ -103,3 +109,15 @@ eratosthenes:
         xorl    %eax, %eax
         movq    %rax, (%rsi)            # *m = 0;
         ret                             # return NULL;
+
+.calloc_error:
+        leaq    calloc_err_msg(%rip), %rdi
+        movq    stderr(%rip), %rsi
+        call    fputs
+        xorl    %eax, %eax
+        movq    %rax, (%r12)
+        jmp     .ret
+
+.data
+calloc_err_msg:
+        .string "Error: myCalloc() returned NULL!\n"
