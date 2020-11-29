@@ -3,7 +3,17 @@
  * @author Ammar Faizi <ammarfaizi2@gmail.com>
  */
 
-#define DEBUG_PRINT
+// #define DEBUG_PRINT
+
+#define SAVE_3_ARGS     \
+        pushq %rdi;     \
+        pushq %rsi;     \
+        pushq %rdx;
+
+#define REST_3_ARGS     \
+        popq %rdi;      \
+        popq %rsi;      \
+        popq %rdx;
 
 .text
         .global eratosthenes
@@ -34,6 +44,7 @@ eratosthenes:
         pushq   %r14
         pushq   %r15
 
+        movq    %rsi, %r15
         movq    %rsp, %rbp
         subq    $8, %rsp
 
@@ -57,53 +68,68 @@ eratosthenes:
         call    myCalloc        # table = (bool *)myCalloc(n, sizeof(bool));
         movq    %rax, %r13
 
-        movl    $2, %ecx        # uint64_t rcx = 2; // counter (p)
-        movl    %ecx, %r14d     # uint64_t r14 = 2; // current smallest prime (sp)
+        movl    $2, %r14d       # uint64_t p = 2; // current smallest prime (p)
+        movl    $1, %ecx        # uint64_t i = 1; // counter (i)
 
-        xorl    %r15d, %r15d    # // r15  = 0 (array index counter)
+        # // r14 = p
+        # // rcx = i
+        # // Enumerate np, while (ip < i);
+        # uint64_t ip;
+.traverse_r14:
+        incq    %rcx
+        movq    %rcx, %rax
+        mulq    %r14            # ip = i * p;
+        cmpq    %rbx, %rax
+        jae     .next_check     # if (ip >= n) goto .next_check
 
-.traverse_prime_p:
+        movb    $1, (%r13, %rax, 1) # table[ip] = true;
 
-        ## Check whether %r14 is prime number or not.
-        movl    $2, %r9d        # uint64_t r9 = 2;
-
-        cmpq    %r14, %r9       # while (r9 < r14) {
-        jae     .next_check     
-.check_prime:
-        movq    %r14, %rax
-        xorl    %edx, %edx
-        div     %r9
 #ifdef DEBUG_PRINT
-        leaq    fmt2(%rip), %rdi
+        SAVE_3_ARGS
+        leaq    fmt1(%rip), %rdi
         movq    %rax, %rsi
         callq   safe_printf
+        REST_3_ARGS
 #endif
-        testq   %rdx, %rdx      #   if ((r14 % r9) == 0) {
-        jz      .is_not_prime   #     goto .is_not_prime;
-        incq    %r9             #   }
 
-        cmpq    %r14, %r9       #   if (r9 >= r14) {
-        jb      .check_prime    #     break; // r14 is a prime number.
-                                #   }
-                                # } // end of while (r9 > r14)
-.is_prime:
-        jmp     .next_check
-.is_not_prime:
-
-
+        jmp     .traverse_r14   # goto .traverse_r14;
 .next_check:
-#ifdef DEBUG_PRINT
-        leaq    fmt1(%rip), %rdi
-        movq    %r14, %rsi
-        callq   safe_printf
-#endif
+        # // Now, find the smallest unmarked.
+        movq    %r14, %rcx      # i = p;
+.get_smallest_unmarked:
+        incq    %rcx            # i++;
 
-        
+        cmpq    %rbx, %rcx
+        jae     .all_non_prime_numbers_have_been_marked
 
-        incq    %r14
-        cmpq    %rbx, %r14
-        jb      .traverse_prime_p
+        testb   $1, (%r13, %rcx, 1)
+        jnz     .get_smallest_unmarked
+
+        # // Smallest unmarked has been found.
+        movq    %rcx, %r14      # p = i;
+        movq    $1, %rcx
+        jmp     .traverse_r14   # goto .traverse_r14;
+
+.all_non_prime_numbers_have_been_marked:
+        xorl    %edx, %edx
+        movl    $1, %ecx
+.fill_the_array:
+        cmpq    %rbx, %rcx
+        jae     .epilogue
+        incq    %rcx
+        testb   $1, (%r13, %rcx, 1)
+        jz      .do_fill
+        jmp     .fill_the_array
+.do_fill:
+        incq    %rdx
+        movq    %rcx, (%r12, %rdx, 8)
+        jmp     .fill_the_array
 .epilogue:
+        movq    %rdx, (%r15)
+        movq    %r13, %rdi
+        call    myFree
+
+        movq    %r12, %rax
         movq    %rbp, %rsp
 
         popq    %r15
@@ -120,6 +146,7 @@ eratosthenes:
 /* Only safe for 3 arguments (max). */
 /* rdi, rsi, rdx */
 safe_printf:
+        pushfq
         pushq   %rax
         pushq   %rcx
         pushq   %r8
@@ -141,6 +168,7 @@ safe_printf:
         popq    %r8
         popq    %rcx
         popq    %rax
+        popfq
         ret
 
 .data
